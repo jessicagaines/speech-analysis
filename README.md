@@ -4,4 +4,4 @@ Scripts used to analyze acoustic speech data produced during altered auditory fe
 Written for Matlab R2024b.
 
 Projects:
-- Adaptation response to repeated blocks of pitch shift
+- Adaptation response to repeated blocks of pitch shift: run pitch_adapt_all_subj.m
