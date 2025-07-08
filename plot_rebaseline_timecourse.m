@@ -17,12 +17,12 @@ function [] = plot_rebaseline_timecourse(stacked_f0,pool_n,cond_values)
         clusters
         p_values
         % add green color for significant clusters
-        %for j = 1:size(p_values,2)
-        %    if p_values(j) < 0.05
-        %        sig_trials = cell2mat(clusters(j));
-        %        plot(sig_trials + 60*i,zeros(size(sig_trials)),'g',LineWidth=5)
-        %    end
-        %end
+        for j = 1:size(p_values,2)
+            if p_values(j) < 0.05
+                sig_trials = cell2mat(clusters(j));
+                plot(sig_trials + 60*i,zeros(size(sig_trials)),'g',LineWidth=5)
+            end
+        end
     end
     saveas(fig,'multiple_pitch_adapt_figures/rebaseline_timecourse','fig');
     saveas(fig,'multiple_pitch_adapt_figures/rebaseline_timecourse','epsc');
