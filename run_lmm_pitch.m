@@ -16,86 +16,105 @@ function [] = run_lmm_pitch(stacked_f0, cond_values, baseline_size, adapt_size, 
     
     all = [baseline holds early_washout late_washout];
     pitch = all(:);
-    phase = repmat([repmat("baseline",size(baseline,1)*size(baseline,2),1); repmat("holds",size(holds,1)*size(holds,2),1); repmat("early_washout",size(early_washout,1)*size(early_washout,2),1); repmat("late_washout",size(late_washout,1)*size(late_washout,2),1)],size(stacked_f0,3),1);
+    
+    % full model
+    fprintf("Full Model\n")
+    phases = ["Baseline", "Holds", "Early Washout", "Late Washout"];
+    cycles = ["1","2","3"];
+    phase = repmat([repmat(phases(1),size(baseline,1)*size(baseline,2),1); repmat(phases(2),size(holds,1)*size(holds,2),1); repmat(phases(3),size(early_washout,1)*size(early_washout,2),1); repmat(phases(4),size(late_washout,1)*size(late_washout,2),1)],size(stacked_f0,3),1);
     cycle = [zeros(size(all,1)*size(all,2),1); ones(size(all,1)*size(all,2),1); repmat(2,size(all,1)*size(all,2),1)];
-    %cycle = [repmat("0",size(all,1)*size(all,2),1); repmat("1", size(all,1)*size(all,2),1); repmat("2",size(all,1)*size(all,2),1)];
+    cat_cycle = [repmat(cycles(1),size(all,1)*size(all,2),1); repmat(cycles(2),size(all,1)*size(all,2),1); repmat(cycles(3),size(all,1)*size(all,2),1)];
+    
     participant = repmat(transpose(1:size(all,1)),size(all,2)*size(all,3),1);
-    shift = repmat(shifts,size(all,2)*size(all,3),1);
-    tbl = [array2table(pitch) array2table(phase) array2table(cycle) array2table(participant) array2table(shift)];
+    tbl = [array2table(pitch) array2table(phase) array2table(cycle) array2table(cat_cycle) array2table(participant)];% array2table(shift)];
     tbl=tbl(~any(ismissing(tbl),2),:);
-    lme = fitlme(tbl,"pitch ~ 1 + phase + cycle + phase*cycle + (1|participant)");
-    lme
-    
-    
-    x = 0:size(stacked_f0,3)-1;
+    writetable(tbl,"pitch.csv")
+    %lme = fitlme(tbl,"pitch ~ 1 + phase + cycle + phase*cycle + (1|participant)","DummyVarCoding","reference")
+    %p = coefTest(lme)
+    %anova(lme)
 
-    baseline_cycles = reshape(baseline,[],size(stacked_f0,3));
-    hold_cycles = reshape(holds,[],size(stacked_f0,3));
-    early_washout_cycles = reshape(early_washout,[],size(stacked_f0,3));
-    late_washout_cycles = reshape(late_washout,[],size(stacked_f0,3));
+    fprintf("Full Model Cat")
+    cat_lme = fitlme(tbl,"pitch ~ 1 + phase + cat_cycle + phase*cat_cycle + (1|participant)","DummyVarCoding","reference")
+    p = coefTest(cat_lme)
+    anova(cat_lme)
 
-    fig = figure('Position',[200,50,700,700]);
-    tiledlayout(2,2)
-    names = lme.Coefficients.Name;
+    % posthocs
 
-    nexttile;
-    hold on;
-    title("Baseline")
-    intercept = lme.Coefficients.Estimate(find(names == "(Intercept)"));
-    cycle_slope = lme.Coefficients.Estimate(find(names == "cycle"));
-    plot(x,intercept + cycle_slope*x,LineStyle='--',LineWidth=2,color="k")
-    plot_data(x,baseline_cycles)
-    plot_extras(size(stacked_f0,3))
-    if lme.Coefficients.pValue(find(names == "(Intercept)")) < 0.05
-        text(1,20,'*',FontSize=30,color='k')
+    fig = figure('Position',[200,50,1000,400]);
+    tiledlayout(1,length(cycles))
+
+    for i=1:length(cycles)
+        current_cycle = cycles(i);
+        idx = find(tbl.cat_cycle == current_cycle);
+        posthoc_tbl = tbl(idx,:);
+        fprintf("Cycle = " + current_cycle + "\n")
+        posthoc_lme = fitlme(posthoc_tbl,"pitch ~ 1 + phase + (1|participant)","DummyVarCoding","reference")
+        p = coefTest(posthoc_lme)
+
+        nexttile;
+        hold on;
+        title("Cycle " + current_cycle)
+        betas = posthoc_lme.Coefficients.Estimate;
+        std_errs = posthoc_lme.Coefficients.SE;
+        std_devs = std_errs * sqrt(height(posthoc_tbl));
+        variances = std_devs.^2;
+        intercept_variance = variances(1);
+        combined_variances = vertcat(intercept_variance, variances(2:end) + intercept_variance);
+        combined_std_devs = sqrt(combined_variances);
+        combined_std_errs = combined_std_devs ./ sqrt(height(posthoc_tbl));
+        intercept = betas(1);
+        total_betas = vertcat(intercept, betas(2:end)+intercept);
+        bar(phases,total_betas)
+        errorbar(1:length(phases),total_betas,combined_std_errs,LineStyle="none",color='k')
+        for j=1:length(phases)
+            if posthoc_lme.Coefficients.pValue(j) < 0.05
+                text(j-0.1,max(10,total_betas(j) + 10),'*',FontSize=20,color='k')
+            end
+        end
+        ylim([-45,27])
+        ylabel("Fixed Effects Coefficient (cents)")
+
     end
 
-    nexttile;
-    hold on;
-    title("Holds")
-    plot_data(x,hold_cycles)
-    plot_extras(size(stacked_f0,3))
-    plot_model(x,"phase_holds",lme,intercept,cycle_slope)
+    saveas(fig,'multiple_pitch_adapt_figures/posthocs_cycle','fig');
+    saveas(fig,'multiple_pitch_adapt_figures/posthocs_cycle','epsc');
 
-    nexttile;
-    hold on;
-    title("Early Washout")
-    plot_data(x,early_washout_cycles)
-    plot_extras(size(stacked_f0,3))
-    plot_model(x,"phase_early_washout",lme,intercept,cycle_slope)
+    fig = figure('Position',[200,50,1300,400]);
+    tiledlayout(1,length(phases))
 
-    nexttile;
-    hold on;
-    title("Late Washout")
-    plot_data(x,late_washout_cycles)
-    plot_extras(size(stacked_f0,3))
-    plot_model(x,"phase_late_washout",lme,intercept,cycle_slope)
-    
-    saveas(fig,'multiple_pitch_adapt_figures/phase_by_cycle','fig');
-    saveas(fig,'multiple_pitch_adapt_figures/phase_by_cycle','epsc');
-end
+    for i=1:length(phases)
+        current_phase = phases(i);
+        idx = find(tbl.phase == current_phase);
+        posthoc_tbl = tbl(idx,:);
+        fprintf("Phase = " + current_phase + "\n")
+        posthoc_lme = fitlme(posthoc_tbl,"pitch ~ 1 + cat_cycle + (1|participant)","DummyVarCoding","reference")
+        p = coefTest(posthoc_lme)
+        
+        nexttile;
+        hold on;
+        title(current_phase)
+        betas = posthoc_lme.Coefficients.Estimate;
+        std_errs = posthoc_lme.Coefficients.SE;
+        std_devs = std_errs * sqrt(height(posthoc_tbl));
+        variances = std_devs.^2;
+        intercept_variance = variances(1);
+        combined_variances = vertcat(intercept_variance, variances(2:end) + intercept_variance);
+        combined_std_devs = sqrt(combined_variances);
+        combined_std_errs = combined_std_devs ./ sqrt(height(posthoc_tbl));
+        intercept = betas(1);
+        total_betas = vertcat(intercept, betas(2:end)+intercept);
+        bar(cycles,total_betas)
+        errorbar(1:length(cycles),total_betas,combined_std_errs,LineStyle="none",color='k')
+        for j=1:length(cycles)
+            if posthoc_lme.Coefficients.pValue(j) < 0.05
+                text(j-0.1,max(10,total_betas(j) + 10),'*',FontSize=20,color='k')
+            end
+        end
+        ylim([-45,27])
+        xlabel("Cycle")
+        ylabel("Fixed Effects Coefficient (cents)")
 
-function[] = plot_extras(n_cycles)
-    ylim([-45,25])
-    xlabel("Cycle")
-    ylabel("Pitch (cents)")
-    xticks(0:n_cycles-1)
-    xticklabels(1:n_cycles)
-    xlim([-0.5,n_cycles-0.5])
-end
-
-function[] = plot_data(x,data)
-    means = mean(data,1,"omitmissing");
-    [H, P, CI] = ttest(data);
-    errorbar(x,means,-(CI(1,:)-means),CI(2,:)-means,"MarkerSize",20,"LineStyle","none",color='k',Marker='.')
-end
-
-function[] = plot_model(x,phase_name,lme,intercept,cycle_slope)
-    names = lme.Coefficients.Name;
-    phase_coef = lme.Coefficients.Estimate(find(names == phase_name));
-    cycle_interact = lme.Coefficients.Estimate(find(names == strcat(phase_name,":cycle")));
-    plot(x,intercept + cycle_slope*x + phase_coef + cycle_interact*x,LineStyle='--',LineWidth=2,color='k')
-    if lme.Coefficients.pValue(find(names == strcat(phase_name,":cycle"))) < 0.05
-        text(0.93,20,'*',FontSize=20,color='k')
     end
-end
+
+    saveas(fig,'multiple_pitch_adapt_figures/posthocs_phase','fig');
+    saveas(fig,'multiple_pitch_adapt_figures/posthocs_phase','epsc');
