@@ -1,2 +1,5 @@
 # Byte-compiled / optimized / DLL files
 multiple_pitch_adapt_figures/*
+scratch.m
+*.asv
+plot_correlations_old.m
