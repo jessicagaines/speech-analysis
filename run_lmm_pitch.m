@@ -38,83 +38,15 @@ function [] = run_lmm_pitch(stacked_f0, cond_values, baseline_size, adapt_size, 
     p = coefTest(cat_lme)
     anova(cat_lme)
 
+    fprintf("Full Model with Shift")
+    cat_lme = fitlme(tbl,"pitch ~ 1 + phase + cat_cycle + shift + phase*cat_cycle + shift*phase + shift*cat_cycle + shift*phase*cat_cycle + (1|participant)","DummyVarCoding","reference")
+    p = coefTest(cat_lme)
+    anova(cat_lme)
+
     % posthocs
 
-    fig = figure('Position',[200,50,1000,400]);
-    tiledlayout(1,length(cycles))
-
-    for i=1:length(cycles)
-        current_cycle = cycles(i);
-        idx = find(tbl.cat_cycle == current_cycle);
-        posthoc_tbl = tbl(idx,:);
-        fprintf("Cycle = " + current_cycle + "\n")
-        posthoc_lme = fitlme(posthoc_tbl,"pitch ~ 1 + phase + (1|participant)","DummyVarCoding","reference")
-        p = coefTest(posthoc_lme)
-
-        nexttile;
-        hold on;
-        title("Cycle " + current_cycle)
-        betas = posthoc_lme.Coefficients.Estimate;
-        std_errs = posthoc_lme.Coefficients.SE;
-        std_devs = std_errs * sqrt(height(posthoc_tbl));
-        variances = std_devs.^2;
-        intercept_variance = variances(1);
-        combined_variances = vertcat(intercept_variance, variances(2:end) + intercept_variance);
-        combined_std_devs = sqrt(combined_variances);
-        combined_std_errs = combined_std_devs ./ sqrt(height(posthoc_tbl));
-        intercept = betas(1);
-        total_betas = vertcat(intercept, betas(2:end)+intercept);
-        bar(phases,total_betas)
-        errorbar(1:length(phases),total_betas,combined_std_errs,LineStyle="none",color='k')
-        for j=1:length(phases)
-            if posthoc_lme.Coefficients.pValue(j) < 0.05
-                text(j-0.1,max(10,total_betas(j) + 10),'*',FontSize=20,color='k')
-            end
-        end
-        ylim([-45,27])
-        ylabel("Fixed Effects Coefficient (cents)")
+    posthoc(tbl,tbl.cat_cycle,tbl.phase,"pitch ~ 1 + phase + (1|participant)","Cycle ",[-45,27],"",'multiple_pitch_adapt_figures/posthocs_cycle')
+    posthoc(tbl,tbl.phase,tbl.cat_cycle,"pitch ~ 1 + cat_cycle + (1|participant)","",[-45,27],"Cycle",'multiple_pitch_adapt_figures/posthocs_phase')
 
     end
 
-    saveas(fig,'multiple_pitch_adapt_figures/posthocs_cycle','fig');
-    saveas(fig,'multiple_pitch_adapt_figures/posthocs_cycle','epsc');
-
-    fig = figure('Position',[200,50,1300,400]);
-    tiledlayout(1,length(phases))
-
-    for i=1:length(phases)
-        current_phase = phases(i);
-        idx = find(tbl.phase == current_phase);
-        posthoc_tbl = tbl(idx,:);
-        fprintf("Phase = " + current_phase + "\n")
-        posthoc_lme = fitlme(posthoc_tbl,"pitch ~ 1 + cat_cycle + (1|participant)","DummyVarCoding","reference")
-        p = coefTest(posthoc_lme)
-        
-        nexttile;
-        hold on;
-        title(current_phase)
-        betas = posthoc_lme.Coefficients.Estimate;
-        std_errs = posthoc_lme.Coefficients.SE;
-        std_devs = std_errs * sqrt(height(posthoc_tbl));
-        variances = std_devs.^2;
-        intercept_variance = variances(1);
-        combined_variances = vertcat(intercept_variance, variances(2:end) + intercept_variance);
-        combined_std_devs = sqrt(combined_variances);
-        combined_std_errs = combined_std_devs ./ sqrt(height(posthoc_tbl));
-        intercept = betas(1);
-        total_betas = vertcat(intercept, betas(2:end)+intercept);
-        bar(cycles,total_betas)
-        errorbar(1:length(cycles),total_betas,combined_std_errs,LineStyle="none",color='k')
-        for j=1:length(cycles)
-            if posthoc_lme.Coefficients.pValue(j) < 0.05
-                text(j-0.1,max(10,total_betas(j) + 10),'*',FontSize=20,color='k')
-            end
-        end
-        ylim([-45,27])
-        xlabel("Cycle")
-        ylabel("Fixed Effects Coefficient (cents)")
-
-    end
-
-    saveas(fig,'multiple_pitch_adapt_figures/posthocs_phase','fig');
-    saveas(fig,'multiple_pitch_adapt_figures/posthocs_phase','epsc');
