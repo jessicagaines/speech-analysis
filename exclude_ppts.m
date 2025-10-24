@@ -4,7 +4,7 @@ function [all_f0, all_amp, upshift_f0,downshift_f0,stacked_f0,stacked_upshift,st
     std_dev_var = std(variance);
     figure;
     hold on;
-    histogram(variance)
+    histogram(variance,10)
     upper_bound = mean_var + 2*std_dev_var;
     lower_bound = mean_var - 2*std_dev_var;
     xline(upper_bound)
