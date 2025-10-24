@@ -37,11 +37,11 @@ function[] = pitch_adapt_all_subj()
     end
     
     tick_labels = ["Hold 1", "Hold 2", "Hold 3"];
-    plot_indiv_scatter(stacked_f0,cond_values,adapt_size,tick_labels)
-    plot_correlations(stacked_f0,cond_values,adapt_size,washout_size,tick_labels)
+    plot_indiv_scatter(stacked_f0,cond_values,adapt_size,tick_labels,true,"Adaptation (cents)","multiple_pitch_adapt_figures/indiv_scatter")
     %plot_correlations_old(stacked_f0,cond_values,adapt_size,washout_size,tick_labels)
     adapt_values = squeeze(mean(stacked_f0(:,cond_values(3)-adapt_size+1:cond_values(3),:),2,"omitmissing"));
     plot_correlations(adapt_values,[[2 1];[3 1];[nan nan];[3 2]],[2,2],"Pearson",["Hold 1", "Hold 2", "Hold 3"],[-110,120],"multiple_pitch_adapt_figures/correlations")
+
     run_lmm_pitch(stacked_f0, cond_values, baseline_size, adapt_size, washout_size, shifts)
     plot_rebaseline_timecourse(stacked_f0,pool_n,cond_values)
     % check interactions without cycle 3 late washout
@@ -54,23 +54,6 @@ function[] = pitch_adapt_all_subj()
     plot_fatigue(all_amp,all_f0,shifts,pool_n,cond_values)
     %plot_timecourse(all_f0,upshift_f0,downshift_f0,pool_n,cond_values)
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
