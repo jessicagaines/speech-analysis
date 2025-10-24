@@ -18,15 +18,15 @@ function [] = run_lmm_pitch(stacked_f0, cond_values, baseline_size, adapt_size, 
     pitch = all(:);
     
     % full model
-    fprintf("Full Model\n")
-    phases = ["Baseline", "Holds", "Early Washout", "Late Washout"];
+    phases = ["Baseline", "Hold", "Early Washout", "Late Washout"];
     cycles = ["1","2","3"];
     phase = repmat([repmat(phases(1),size(baseline,1)*size(baseline,2),1); repmat(phases(2),size(holds,1)*size(holds,2),1); repmat(phases(3),size(early_washout,1)*size(early_washout,2),1); repmat(phases(4),size(late_washout,1)*size(late_washout,2),1)],size(stacked_f0,3),1);
     cycle = [zeros(size(all,1)*size(all,2),1); ones(size(all,1)*size(all,2),1); repmat(2,size(all,1)*size(all,2),1)];
     cat_cycle = [repmat(cycles(1),size(all,1)*size(all,2),1); repmat(cycles(2),size(all,1)*size(all,2),1); repmat(cycles(3),size(all,1)*size(all,2),1)];
     
-    participant = repmat(transpose(1:size(all,1)),size(all,2)*size(all,3),1);
-    tbl = [array2table(pitch) array2table(phase) array2table(cycle) array2table(cat_cycle) array2table(participant)];% array2table(shift)];
+    participant = repmat(string(transpose(1:size(all,1))),size(all,2)*size(all,3),1);
+    shift = repmat(string(shifts),size(all,2)*size(all,3),1);
+    tbl = [array2table(pitch) array2table(phase) array2table(cycle) array2table(cat_cycle) array2table(participant) array2table(shift)];
     tbl=tbl(~any(ismissing(tbl),2),:);
     writetable(tbl,"pitch.csv")
     %lme = fitlme(tbl,"pitch ~ 1 + phase + cycle + phase*cycle + (1|participant)","DummyVarCoding","reference")
@@ -48,5 +48,6 @@ function [] = run_lmm_pitch(stacked_f0, cond_values, baseline_size, adapt_size, 
     posthoc(tbl,tbl.cat_cycle,tbl.phase,"pitch ~ 1 + phase + (1|participant)","Cycle ",[-45,27],"",'multiple_pitch_adapt_figures/posthocs_cycle')
     posthoc(tbl,tbl.phase,tbl.cat_cycle,"pitch ~ 1 + cat_cycle + (1|participant)","",[-45,27],"Cycle",'multiple_pitch_adapt_figures/posthocs_phase')
 
-    end
+    posthoc(tbl,tbl.shift,tbl.phase,"pitch ~ 1 + phase + (1|participant)","",[-45,27],"",'multiple_pitch_adapt_figures/posthocs_shifts')
 
+end
