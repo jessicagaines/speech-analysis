@@ -43,11 +43,12 @@ function[] = pitch_adapt_all_subj()
     plot_correlations(adapt_values,[[2 1];[3 1];[nan nan];[3 2]],[2,2],"Pearson",["Hold 1", "Hold 2", "Hold 3"],[-110,120],"multiple_pitch_adapt_figures/correlations")
     run_lmm_pitch(stacked_f0, cond_values, baseline_size, adapt_size, washout_size, shifts)
     plot_rebaseline_timecourse(stacked_f0,pool_n,cond_values,[size(stacked_f0,3),1],"f0 (cents)",[-60,40],["Cycle 1", "Cycle 2", "Cycle 3"],'multiple_pitch_adapt_figures/rebaseline_timecourse')
-    hold_phase_difference(stacked_f0,cond_values,baseline_size,adapt_size,washout_size)
-    visualize_variability(stacked_f0,cond_values,baseline_size,adapt_size)
-    plot_timecourse(all_f0,upshift_f0,downshift_f0,pool_n,cond_values)
+    %hold_phase_difference(stacked_f0,cond_values,baseline_size,adapt_size,washout_size)
+    %visualize_variability(stacked_f0,cond_values,baseline_size,adapt_size)
+    %plot_timecourse(all_f0,upshift_f0,downshift_f0,pool_n,cond_values)
     plot_fatigue(all_amp,all_f0,shifts,pool_n,cond_values)
     %plot_timecourse(all_f0,upshift_f0,downshift_f0,pool_n,cond_values)
+
 end
 
 

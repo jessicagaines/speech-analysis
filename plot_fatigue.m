@@ -8,12 +8,6 @@ function[] = plot_fatigue(all_amp,all_f0,shifts,pool_n,cond_values)
         slope = mdl.Coefficients.Estimate(2);
         slopes(i) = slope;
     end
-    figure;
-    hold on;
-    hist(slopes,15)
-    xlabel("Amplitude Slope")
-    ylabel("Prevalence")
-    inclusion = slopes < mean(slopes)+2*std(slopes) & slopes > mean(slopes) - 2*std(slopes);
 
     fig = figure('Position',[200,50,700,500]);
     tiledlayout(2,1);
