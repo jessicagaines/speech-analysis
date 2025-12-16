@@ -48,6 +48,6 @@ function [] = run_lmm_pitch(stacked_f0, cond_values, baseline_size, adapt_size, 
     posthoc(tbl,tbl.cat_cycle,tbl.phase,"pitch ~ 1 + phase + (1|participant)","Cycle ",[-45,27],"",'multiple_pitch_adapt_figures/posthocs_cycle')
     posthoc(tbl,tbl.phase,tbl.cat_cycle,"pitch ~ 1 + cat_cycle + (1|participant)","",[-45,27],"Cycle",'multiple_pitch_adapt_figures/posthocs_phase')
 
-    posthoc(tbl,tbl.shift,tbl.phase,"pitch ~ 1 + phase + (1|participant)","",[-45,27],"",'multiple_pitch_adapt_figures/posthocs_shifts')
+    %posthoc(tbl,tbl.shift,tbl.phase,"pitch ~ 1 + phase + (1|participant)","",[-45,27],"",'multiple_pitch_adapt_figures/shift_phase')
 
 end
