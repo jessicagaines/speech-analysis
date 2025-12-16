@@ -43,7 +43,7 @@ function [] = plot_amplitude(amplitude,shifts,pool_n,title_str,cond_values)
     title(title_str)
     legend(["","","","","","","Upshift","Downshift","All"],Location="northwest")
     xlim([0,size(amplitude,2)+1])
-    ylabel("Amplitude (%)")
+    ylabel("Amplitude (%)",fontsize=12)
 end
 
 function [] = plot_variability(all_f0, pool_n,shifts)
@@ -62,5 +62,5 @@ function [] = plot_variability(all_f0, pool_n,shifts)
     ylim([10,90])
     title("Mean Participant F0 Variability")
     xlabel("Trial")
-    ylabel("Standard Deviation (cents)")
+    ylabel("Standard Deviation (cents)",fontsize=12)
 end

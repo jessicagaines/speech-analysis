@@ -41,7 +41,6 @@ end
 function[] = plot_extras(n_adapt,tick_labels)
     xticks(1:n_adapt)
     xticklabels(tick_labels)
-    xlabel('Trials')
     xlim([0.5,n_adapt+0.5])
 end
 

@@ -41,13 +41,8 @@ function[] = pitch_adapt_all_subj()
     %plot_correlations_old(stacked_f0,cond_values,adapt_size,washout_size,tick_labels)
     adapt_values = squeeze(mean(stacked_f0(:,cond_values(3)-adapt_size+1:cond_values(3),:),2,"omitmissing"));
     plot_correlations(adapt_values,[[2 1];[3 1];[nan nan];[3 2]],[2,2],"Pearson",["Hold 1", "Hold 2", "Hold 3"],[-110,120],"multiple_pitch_adapt_figures/correlations")
-
     run_lmm_pitch(stacked_f0, cond_values, baseline_size, adapt_size, washout_size, shifts)
-    plot_rebaseline_timecourse(stacked_f0,pool_n,cond_values,[size(stacked_f0,3),1],"Pitch (cents)",[-60,40],["Cycle 1", "Cycle 2", "Cycle 3"],'multiple_pitch_adapt_figures/rebaseline_timecourse')
-    % check interactions without cycle 3 late washout
-    %modified_stacked_f0 = stacked_f0;
-    %modified_stacked_f0(:,cond_values(4)-washout_size+1:cond_values(4),3) = NaN;
-    %run_lmm_pitch(modified_stacked_f0, cond_values, baseline_size, adapt_size, washout_size, shifts)
+    plot_rebaseline_timecourse(stacked_f0,pool_n,cond_values,[size(stacked_f0,3),1],"f0 (cents)",[-60,40],["Cycle 1", "Cycle 2", "Cycle 3"],'multiple_pitch_adapt_figures/rebaseline_timecourse')
     hold_phase_difference(stacked_f0,cond_values,baseline_size,adapt_size,washout_size)
     visualize_variability(stacked_f0,cond_values,baseline_size,adapt_size)
     plot_timecourse(all_f0,upshift_f0,downshift_f0,pool_n,cond_values)

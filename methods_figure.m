@@ -21,7 +21,7 @@ function [] = methods_figure(cond_array,baseline_size,adapt_size,washout_size,n_
     xlim([0,cond_values(end)+20])
     ylim([-300,300])
     xlabel("Trial")
-    ylabel("F0 Shift (cents)")
+    ylabel("f0 shift (cents)")
     xticks(0:baseline_size:cond_values(end))
     yticks([-max(abs(cond_array)),0,max(abs(cond_array))])
     for i = 0:n_cycles-1
